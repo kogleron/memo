@@ -9,7 +9,7 @@ SQLite will be used as storage, Gin as http web framework .
 ## Development plan
 
 - [x] Set up Gin
-- [ ] Add linting
+- [x] Add linting
 - [ ] Init database structure and factories
 - [ ] Create telegram bot
 - [ ] Add ability to add new memos

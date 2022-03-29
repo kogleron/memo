@@ -11,5 +11,8 @@ func main() {
 			"message": "pong",
 		})
 	})
-	r.Run()
+	err := r.Run()
+	if err != nil {
+		panic(err)
+	}
 }
