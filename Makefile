@@ -1,5 +1,6 @@
 GO       ?= go
 GOFLAGS  ?=
+PROJECT_NAME ?= memo
 
 install:
 	@echo "Install required programs"
@@ -13,7 +14,7 @@ format:
 	${HOME}/go/bin/gofumpt -l -w -extra .
 	@echo "Formatting imports..."
 	@for f in $$(find . -name '*.go'); do \
-		${HOME}/go/bin/goimports-reviser -file-path $$f -project-name jimmy_tech_crud_gin; \
+		${HOME}/go/bin/goimports-reviser -file-path $$f -project-name $(PROJECT_NAME); \
 	done
 
 lint:
@@ -29,3 +30,6 @@ build:
 
 run: build
 	./bin/memo
+
+init-db:
+	$(GO) $(GOFLAG) run migrations/sqlite.go
