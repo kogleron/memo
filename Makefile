@@ -26,7 +26,7 @@ install-githooks:
 	cp ./githooks/* .git/hooks/
 
 build:
-	$(GO) $(GOFLAG) build -o ./bin/memo ./cmd/memo
+	$(GO) $(GOFLAG) build -o ./bin/polling_bot ./cmd/polling_bot
 
 run: build
 	./bin/memo
