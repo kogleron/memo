@@ -1,30 +1,32 @@
-package command
+package command_test
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"memo/internal/command"
 )
 
 func Test_Parser_ParseCommand(t *testing.T) {
 	t.Parallel()
+
 	tests := []struct {
 		name        string
 		message     string
-		expectedCmd *Command
+		expectedCmd *command.Command
 		expectedErr error
 	}{
 		{
 			name:        "empty message",
 			message:     "   ",
 			expectedCmd: nil,
-			expectedErr: errors.New("empty message"),
+			expectedErr: command.ErrEmptyMessage,
 		},
 		{
 			name:    "trim message",
 			message: " some message  ",
-			expectedCmd: &Command{
+			expectedCmd: &command.Command{
 				Name:    "add",
 				Payload: "some message",
 			},
@@ -36,7 +38,7 @@ func Test_Parser_ParseCommand(t *testing.T) {
 		tt := &tests[n]
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			parser := NewParser()
+			parser := command.NewParser()
 
 			actualCmd, actualErr := parser.ParseCommand(tt.message)
 

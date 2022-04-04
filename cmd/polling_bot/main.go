@@ -21,18 +21,22 @@ func main() {
 	}
 
 	telegramConf := configs.GetTelegramConfig()
+
 	tgBot, err := tgbotapi.NewBotAPI(telegramConf.BotToken)
 	if err != nil {
 		panic(err)
 	}
+
 	tgBot.Debug = telegramConf.DebugMode
 	log.Printf("Authorized on account %s\n", tgBot.Self.UserName)
 
-	conf := configs.GetDbConfig()
+	conf := configs.GetDBConfig()
+
 	db, err := gorm.Open(sqlite.Open(conf.Database), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
+
 	memoRepo := memo.NewRepository(db)
 
 	cmdParser := command.NewParser()

@@ -2,12 +2,12 @@ package configs
 
 import "os"
 
-type DbConfig struct {
+type DBConfig struct {
 	Database string
 }
 
-func GetDbConfig() DbConfig {
-	return DbConfig{
+func GetDBConfig() DBConfig {
+	return DBConfig{
 		Database: os.Getenv("SQLITE_DATABASE"),
 	}
 }

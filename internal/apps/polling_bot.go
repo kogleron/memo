@@ -26,6 +26,7 @@ func (b *PollingBot) Run() {
 		if !b.isAllowedUpdate(&update) {
 			continue
 		}
+
 		b.processUpdate(&update)
 	}
 }
@@ -49,35 +50,44 @@ func (b *PollingBot) processUpdate(update *tgbotapi.Update) {
 
 	if !b.cmdParser.IsCommand(update.Message) {
 		log.Printf("not a command: %s\n", update.Message.Text)
+
 		return
 	}
 
 	cmd, err := b.cmdParser.ParseCommand(update.Message.Text)
 	if err != nil {
 		log.Println(err)
+
 		return
 	}
+
 	if cmd == nil {
 		return
 	}
 
 	cmdWasExecuted := false
+
 	for _, cmdExecutor := range b.cmdExecutors {
 		if !cmdExecutor.Supports(*cmd) {
 			continue
 		}
+
 		err = cmdExecutor.Run(*cmd)
 		if err != nil {
 			log.Println(err)
 		}
+
 		cmdWasExecuted = true
+
 		break
 	}
 
 	if cmdWasExecuted {
 		b.onSuccessExecution(update)
+
 		return
 	}
+
 	b.onFailedExecution(update, *cmd)
 }
 

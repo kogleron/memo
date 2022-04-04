@@ -15,7 +15,7 @@ func main() {
 		panic(err)
 	}
 
-	conf := configs.GetDbConfig()
+	conf := configs.GetDBConfig()
 
 	db, err := gorm.Open(sqlite.Open(conf.Database), &gorm.Config{})
 	if err != nil {

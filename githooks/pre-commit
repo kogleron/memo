@@ -2,4 +2,5 @@
 
 go mod tidy && \
 make format && \
-make lint
+make lint && \
+make test

@@ -19,7 +19,7 @@ format:
 
 lint:
 	@echo "Linting"
-	${HOME}/go/bin/golangci-lint run
+	${HOME}/go/bin/golangci-lint run --fix
 
 install-githooks:
 	@echo "Installing githooks"
@@ -30,6 +30,10 @@ build:
 
 run: build
 	./bin/memo
+
+test:
+	@echo "Testing"
+	$(GO) $(GOFLAG) test ./...
 
 init-db:
 	$(GO) $(GOFLAG) run migrations/sqlite.go

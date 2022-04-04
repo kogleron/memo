@@ -1,0 +1,35 @@
+linters:
+  presets:
+    - bugs
+    - comment
+    - complexity
+    - error
+    - format
+    - import
+    - metalinter
+    - module
+    - performance
+    - sql
+    - style
+    - test
+    - unused
+  enable:
+    - govet
+    - exportloopref
+  disable:
+    - wrapcheck
+    - ireturn
+    - varnamelen
+    - exhaustivestruct
+    - gofumpt
+    - goimports
+    - maligned
+    - scopelint
+    - golint
+    - interfacer
+    - godot
+    - gci
+    - revive
+    - ifshort
+issues:
+  fix: true
