@@ -14,4 +14,7 @@ SQLite will be used as storage, Gin as http web framework .
 - [x] Create telegram bot
 - [x] Add an ability to add new memos
 - [ ] Add an ability to receive random memos on daily basis
+- [ ] Link memos to telegram accounts
 - [ ] Add an ability to search a memo by keywords
+- [ ] Add visibility for memos. Private memos only for owner, public will be used for subscriptions.
+- [ ] Add subscriptions. Subscriber will receive notifications about new publisher's memos. Publisher's memos will be used in daily bot postings.
