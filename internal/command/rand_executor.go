@@ -1,6 +1,8 @@
 package command
 
 import (
+	"log"
+
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
 	"memo/internal/memo"
@@ -32,22 +34,20 @@ func (e *RandExecutor) Run(cmd Command) error {
 }
 
 func (e *RandExecutor) sendMemos(message *tgbotapi.Message, memos []memo.Memo) error {
-	replyText := ""
+	var err error
 
-	for i := len(memos) - 1; i >= 0; i-- {
-		replyText += memos[i].Text
-		if i > 0 {
-			replyText += "\n\n"
+	for i := range memos {
+		msg := tgbotapi.NewMessage(
+			message.Chat.ID,
+			memos[i].Text,
+		)
+		msg.ReplyToMessageID = message.MessageID
+
+		_, err = e.tgBot.Send(msg)
+		if err != nil {
+			log.Println(err)
 		}
 	}
-
-	msg := tgbotapi.NewMessage(
-		message.Chat.ID,
-		replyText,
-	)
-	msg.ReplyToMessageID = message.MessageID
-
-	_, err := e.tgBot.Send(msg)
 
 	return err
 }

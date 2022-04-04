@@ -38,21 +38,19 @@ func (c *RandCommand) sendMemos(user user.User, memos []memo.Memo) error {
 		return errors.New("no chat id for user " + user.TgAccount) //nolint: goerr113
 	}
 
-	replyText := ""
+	var err error
 
-	for i := len(memos) - 1; i >= 0; i-- {
-		replyText += memos[i].Text
-		if i > 0 {
-			replyText += "\n\n"
+	for i := range memos {
+		msg := tgbotapi.NewMessage(
+			user.TgChatID,
+			memos[i].Text,
+		)
+
+		_, err := c.tgBot.Send(msg)
+		if err != nil {
+			log.Println(err)
 		}
 	}
-
-	msg := tgbotapi.NewMessage(
-		user.TgChatID,
-		replyText,
-	)
-
-	_, err := c.tgBot.Send(msg)
 
 	return err
 }
