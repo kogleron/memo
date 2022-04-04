@@ -13,6 +13,7 @@ SQLite will be used as storage, Gin as http web framework .
 - [x] Init database structure
 - [x] Create telegram bot
 - [x] Add an ability to add new memos
+- [x] Add "rand" command
 - [ ] Add an ability to receive random memos on daily basis
 - [ ] Link memos to telegram accounts
 - [ ] Add an ability to search a memo by keywords

@@ -31,5 +31,3 @@ linters:
     - gci
     - revive
     - ifshort
-issues:
-  fix: true

@@ -20,6 +20,8 @@ func main() {
 		panic(err)
 	}
 
+	appConf := configs.GetAppConfig()
+
 	telegramConf := configs.GetTelegramConfig()
 
 	tgBot, err := tgbotapi.NewBotAPI(telegramConf.BotToken)
@@ -41,8 +43,9 @@ func main() {
 
 	cmdParser := command.NewParser()
 	cmdExecutors := []command.Executor{
+		command.NewRandExecutor(uint(appConf.RandQty), memoRepo, tgBot),
 		command.NewDefaultCommandExecutor(
-			command.NewAddExecutor(memoRepo),
+			command.NewAddExecutor(memoRepo, tgBot),
 		),
 	}
 
@@ -51,6 +54,7 @@ func main() {
 		telegramConf,
 		cmdParser,
 		cmdExecutors,
+		true,
 	)
 	pollingBot.Run()
 }

@@ -2,4 +2,7 @@ package command
 
 import "errors"
 
-var ErrEmptyMessage = errors.New("empty message")
+var (
+	errEmptyMessage = errors.New("empty message")
+	errNoCmdMessafe = errors.New("no message in command")
+)

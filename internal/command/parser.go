@@ -1,6 +1,7 @@
 package command
 
 import (
+	"regexp"
 	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -12,15 +13,31 @@ func (p *Parser) IsCommand(message *tgbotapi.Message) bool {
 	return message != nil
 }
 
-func (p *Parser) ParseCommand(message string) (*Command, error) {
-	message = strings.Trim(message, " ")
-	if len(message) == 0 {
-		return nil, ErrEmptyMessage
+func (p *Parser) ParseCommand(message *tgbotapi.Message) (*Command, error) {
+	if message == nil {
+		return nil, errEmptyMessage
+	}
+
+	text := strings.Trim(message.Text, " ")
+	if len(text) == 0 {
+		return nil, errEmptyMessage
+	}
+
+	reg := regexp.MustCompile(`^/([a-z]+)\s*(.*?)\s*$`)
+	matches := reg.FindAllStringSubmatch(text, -1)
+
+	if len(matches) == 0 {
+		return &Command{
+			Name:    "add",
+			Payload: text,
+			Message: message,
+		}, nil
 	}
 
 	return &Command{
-		Name:    "add",
-		Payload: message,
+		Name:    matches[0][1],
+		Payload: matches[0][2],
+		Message: message,
 	}, nil
 }
 

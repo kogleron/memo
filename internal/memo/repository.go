@@ -1,6 +1,9 @@
 package memo
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
+)
 
 type Repository struct {
 	db *gorm.DB
@@ -8,6 +11,21 @@ type Repository struct {
 
 func (r *Repository) Create(memo *Memo) {
 	r.db.Create(memo)
+}
+
+func (r *Repository) Rand(qty uint) []Memo {
+	var memos []Memo
+
+	r.db.
+		Clauses(
+			clause.OrderBy{
+				Expression: clause.Expr{SQL: "RANDOM()", WithoutParentheses: true},
+			},
+		).
+		Limit(int(qty)).
+		Find(&memos)
+
+	return memos
 }
 
 func NewRepository(db *gorm.DB) *Repository {
