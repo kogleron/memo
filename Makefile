@@ -37,3 +37,9 @@ test:
 
 init-db:
 	$(GO) $(GOFLAG) run migrations/sqlite.go
+
+install-cron:
+	PWD=$$(pwd); sed "s|\$$PROJECT_PATH|${PWD}|" cron/com.memo.PollingBot.plist >~/Library/LaunchAgents/com.memo.PollingBot.plist
+	launchctl bootout gui/$$UID ~/Library/LaunchAgents/com.memo.PollingBot.plist
+	launchctl bootstrap gui/$$UID ~/Library/LaunchAgents/com.memo.PollingBot.plist
+	launchctl kickstart gui/$$UID/com.memo.PollingBot
