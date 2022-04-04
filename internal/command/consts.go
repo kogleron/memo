@@ -4,5 +4,5 @@ import "errors"
 
 var (
 	errEmptyMessage = errors.New("empty message")
-	errNoCmdMessafe = errors.New("no message in command")
+	errNoCmdMessage = errors.New("no message in command")
 )

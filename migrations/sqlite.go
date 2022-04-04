@@ -7,6 +7,7 @@ import (
 
 	"memo/internal/configs"
 	"memo/internal/memo"
+	"memo/internal/user"
 )
 
 func main() {
@@ -23,6 +24,11 @@ func main() {
 	}
 
 	err = db.AutoMigrate(&memo.Memo{})
+	if err != nil {
+		panic(err)
+	}
+
+	err = db.AutoMigrate(&user.User{})
 	if err != nil {
 		panic(err)
 	}

@@ -9,7 +9,6 @@ import (
 	"gorm.io/gorm"
 
 	"memo/internal/apps"
-	"memo/internal/command"
 	"memo/internal/configs"
 	"memo/internal/memo"
 	"memo/internal/user"
@@ -43,21 +42,6 @@ func main() {
 	memoRepo := memo.NewRepository(db)
 	userRepo := user.NewRepository(db)
 
-	cmdParser := command.NewParser()
-	cmdExecutors := []command.Executor{
-		command.NewRandExecutor(uint(appConf.RandQty), memoRepo, tgBot),
-		command.NewStartExecutor(userRepo, tgBot),
-		command.NewDefaultCommandExecutor(
-			command.NewAddExecutor(memoRepo, tgBot),
-		),
-	}
-
-	pollingBot := apps.NewPollingBot(
-		tgBot,
-		telegramConf,
-		cmdParser,
-		cmdExecutors,
-		true,
-	)
-	pollingBot.Run()
+	randCommand := apps.NewRandCommand(uint(appConf.RandQty), memoRepo, userRepo, tgBot)
+	randCommand.Run()
 }

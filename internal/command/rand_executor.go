@@ -18,7 +18,7 @@ func (e *RandExecutor) Supports(cmd Command) bool {
 
 func (e *RandExecutor) Run(cmd Command) error {
 	if cmd.Message == nil {
-		return errNoCmdMessafe
+		return errNoCmdMessage
 	}
 
 	message := cmd.Message

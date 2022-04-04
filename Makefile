@@ -27,6 +27,7 @@ install-githooks:
 
 build:
 	$(GO) $(GOFLAG) build -o ./bin/polling_bot ./cmd/polling_bot
+	$(GO) $(GOFLAG) build -o ./bin/rand_cmd ./cmd/rand_cmd
 
 run: build
 	./bin/memo
@@ -43,3 +44,7 @@ install-cron:
 	launchctl bootout gui/$$UID ~/Library/LaunchAgents/com.memo.PollingBot.plist
 	launchctl bootstrap gui/$$UID ~/Library/LaunchAgents/com.memo.PollingBot.plist
 	launchctl kickstart gui/$$UID/com.memo.PollingBot
+	PWD=$$(pwd); sed "s|\$$PROJECT_PATH|${PWD}|" cron/com.memo.RandCmd.plist >~/Library/LaunchAgents/com.memo.RandCmd.plist
+	launchctl bootout gui/$$UID ~/Library/LaunchAgents/com.memo.RandCmd.plist
+	launchctl bootstrap gui/$$UID ~/Library/LaunchAgents/com.memo.RandCmd.plist
+	launchctl kickstart gui/$$UID/com.memo.RandCmd
