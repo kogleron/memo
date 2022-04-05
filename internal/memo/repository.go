@@ -3,6 +3,8 @@ package memo
 import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+
+	"memo/internal/user"
 )
 
 type Repository struct {
@@ -13,10 +15,15 @@ func (r *Repository) Create(memo *Memo) {
 	r.db.Create(memo)
 }
 
-func (r *Repository) Rand(qty uint) []Memo {
+func (r *Repository) Rand(qty uint, user *user.User) []Memo {
 	var memos []Memo
 
+	if user == nil {
+		return memos
+	}
+
 	r.db.
+		Where("user_id = ?", user.ID).
 		Clauses(
 			clause.OrderBy{
 				Expression: clause.Expr{SQL: "RANDOM()", WithoutParentheses: true},

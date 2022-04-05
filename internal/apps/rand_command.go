@@ -20,8 +20,10 @@ type RandCommand struct {
 func (c *RandCommand) Run() {
 	users := c.userRepo.FindAll()
 
-	for _, user := range users {
-		memos := c.memoRepo.Rand(c.defaultMemoQty)
+	for i := range users {
+		user := &users[i]
+
+		memos := c.memoRepo.Rand(c.defaultMemoQty, user)
 		if len(memos) == 0 {
 			continue
 		}
@@ -33,7 +35,7 @@ func (c *RandCommand) Run() {
 	}
 }
 
-func (c *RandCommand) sendMemos(user user.User, memos []memo.Memo) error {
+func (c *RandCommand) sendMemos(user *user.User, memos []memo.Memo) error {
 	if user.TgChatID == 0 {
 		return errors.New("no chat id for user " + user.TgAccount) //nolint: goerr113
 	}

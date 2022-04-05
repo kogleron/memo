@@ -45,10 +45,10 @@ func main() {
 
 	cmdParser := command.NewParser()
 	cmdExecutors := []command.Executor{
-		command.NewRandExecutor(uint(appConf.RandQty), memoRepo, tgBot),
+		command.NewRandExecutor(uint(appConf.RandQty), memoRepo, tgBot, userRepo),
 		command.NewStartExecutor(userRepo, tgBot),
 		command.NewDefaultCommandExecutor(
-			command.NewAddExecutor(memoRepo, tgBot),
+			command.NewAddExecutor(memoRepo, tgBot, userRepo),
 		),
 	}
 

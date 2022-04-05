@@ -8,6 +8,7 @@ import (
 
 	"memo/internal/command"
 	"memo/internal/configs"
+	lcerrors "memo/internal/errors"
 )
 
 type PollingBot struct {
@@ -86,7 +87,7 @@ func (b *PollingBot) processUpdate(update *tgbotapi.Update) {
 
 		err = cmdExecutor.Run(*cmd)
 		if err != nil {
-			log.Println(err)
+			b.onExecutionError(err, update.Message)
 		}
 
 		cmdWasExecuted = true
@@ -96,6 +97,26 @@ func (b *PollingBot) processUpdate(update *tgbotapi.Update) {
 
 	if !cmdWasExecuted {
 		b.onFailedExecution(update, *cmd)
+	}
+}
+
+func (b *PollingBot) onExecutionError(err error, message *tgbotapi.Message) {
+	log.Println(err)
+
+	_, needReply := err.(*lcerrors.ReplyError) //nolint: errorlint
+	if !needReply {
+		return
+	}
+
+	msg := tgbotapi.NewMessage(
+		message.Chat.ID,
+		err.Error(),
+	)
+	msg.ReplyToMessageID = message.MessageID
+
+	_, err = b.tgBot.Send(msg)
+	if err != nil {
+		log.Println(err)
 	}
 }
 

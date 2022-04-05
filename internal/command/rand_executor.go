@@ -6,12 +6,14 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
 	"memo/internal/memo"
+	"memo/internal/user"
 )
 
 type RandExecutor struct {
 	defaultMemoQty uint
 	memoRepo       *memo.Repository
 	tgBot          *tgbotapi.BotAPI
+	userRepo       *user.Repository
 }
 
 func (e *RandExecutor) Supports(cmd Command) bool {
@@ -23,14 +25,28 @@ func (e *RandExecutor) Run(cmd Command) error {
 		return errNoCmdMessage
 	}
 
+	user, err := e.getUser(cmd.Message.From.UserName)
+	if err != nil {
+		return err
+	}
+
 	message := cmd.Message
 
-	memos := e.memoRepo.Rand(e.defaultMemoQty)
+	memos := e.memoRepo.Rand(e.defaultMemoQty, user)
 	if len(memos) == 0 {
 		return e.onNoMemos(message)
 	}
 
 	return e.sendMemos(message, memos)
+}
+
+func (e *RandExecutor) getUser(tgAccountName string) (*user.User, error) {
+	user := e.userRepo.FindByTgAccount(tgAccountName)
+	if user == nil {
+		return nil, errNeedStartCmd
+	}
+
+	return user, nil
 }
 
 func (e *RandExecutor) sendMemos(message *tgbotapi.Message, memos []memo.Memo) error {
@@ -64,10 +80,16 @@ func (e *RandExecutor) onNoMemos(message *tgbotapi.Message) error {
 	return err
 }
 
-func NewRandExecutor(defaultMemoQty uint, memoRepo *memo.Repository, tgBot *tgbotapi.BotAPI) *RandExecutor {
+func NewRandExecutor(
+	defaultMemoQty uint,
+	memoRepo *memo.Repository,
+	tgBot *tgbotapi.BotAPI,
+	userRepo *user.Repository,
+) *RandExecutor {
 	return &RandExecutor{
 		defaultMemoQty: defaultMemoQty,
 		memoRepo:       memoRepo,
 		tgBot:          tgBot,
+		userRepo:       userRepo,
 	}
 }
