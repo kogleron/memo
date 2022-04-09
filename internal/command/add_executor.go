@@ -45,6 +45,8 @@ func (e *AddExecutor) Run(cmd Command) error {
 		"done",
 	)
 	msg.ReplyToMessageID = cmd.Message.MessageID
+	msg.DisableWebPagePreview = true
+	msg.DisableNotification = true
 
 	_, err = e.tgBot.Send(msg)
 	if err != nil {

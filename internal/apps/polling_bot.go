@@ -21,13 +21,13 @@ type PollingBot struct {
 
 func (b *PollingBot) Run() {
 	updateConf := tgbotapi.NewUpdate(0)
-	updateConf.Timeout = 10
+	updateConf.Timeout = 3
 	updateConf.AllowedUpdates = append(updateConf.AllowedUpdates, "message")
 	updatesCh := b.tgBot.GetUpdatesChan(updateConf)
 
 	if b.shutdownAfterTimeout {
 		go func() {
-			time.Sleep(time.Second * time.Duration(updateConf.Timeout))
+			time.Sleep(time.Second * time.Duration(updateConf.Timeout+1))
 			b.tgBot.StopReceivingUpdates()
 			log.Println("Stopping...")
 		}()

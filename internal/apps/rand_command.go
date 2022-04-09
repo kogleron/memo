@@ -47,6 +47,7 @@ func (c *RandCommand) sendMemos(user *user.User, memos []memo.Memo) error {
 			user.TgChatID,
 			memos[i].Text,
 		)
+		msg.DisableNotification = true
 
 		_, err := c.tgBot.Send(msg)
 		if err != nil {
