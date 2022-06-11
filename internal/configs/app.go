@@ -5,7 +5,8 @@ import (
 )
 
 type AppConfig struct {
-	RandQty int `envconfig:"RAND_QTY" required:"true"`
+	RandQty         int  `envconfig:"RAND_QTY" required:"true"`
+	SearchResultQty uint `envconfig:"SEARCH_RESULT_QTY" required:"true"`
 }
 
 func GetAppConfig() AppConfig {

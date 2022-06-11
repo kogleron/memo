@@ -23,13 +23,16 @@ func initRandCommand() (*apps.RandCommand, error) {
 	if err != nil {
 		return nil, err
 	}
-	repository := memo.NewRepository(db)
-	userRepository := user.NewRepository(db)
+	gormRepository, err := memo.NewGORMRepository(db)
+	if err != nil {
+		return nil, err
+	}
+	userGORMRepository := user.NewGORMRepository(db)
 	telegramConfig := configs.GetTelegramConfig()
 	botAPI, err := bootstrap.NewTgBot(telegramConfig)
 	if err != nil {
 		return nil, err
 	}
-	randCommand := bootstrap.NewRandCommand(appConfig, repository, userRepository, botAPI)
+	randCommand := bootstrap.NewRandCommand(appConfig, gormRepository, userGORMRepository, botAPI)
 	return randCommand, nil
 }

@@ -5,12 +5,13 @@ import (
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
+	"memo/internal/telegram"
 	"memo/internal/user"
 )
 
 type StartExecutor struct {
-	userRepo *user.Repository
-	tgBot    *tgbotapi.BotAPI
+	userRepo user.Repository
+	tgBot    telegram.BotAPI
 }
 
 func (e *StartExecutor) Supports(cmd Command) bool {
@@ -22,17 +23,27 @@ func (e *StartExecutor) Run(cmd Command) error {
 		return errNoCmdMessage
 	}
 
-	userEntry := e.userRepo.FindByTgAccount(cmd.Message.From.UserName)
+	userEntry, err := e.userRepo.FindByTgAccount(cmd.Message.From.UserName)
+	if err != nil {
+		return err
+	}
 
 	if userEntry == nil {
 		userEntry = &user.User{
 			TgAccount: cmd.Message.From.UserName,
 			TgChatID:  cmd.Message.Chat.ID,
 		}
-		e.userRepo.Create(userEntry)
+
+		err := e.userRepo.Create(userEntry)
+		if err != nil {
+			return err
+		}
 	} else {
 		userEntry.TgChatID = cmd.Message.Chat.ID
-		e.userRepo.Save(userEntry)
+		err := e.userRepo.Save(userEntry)
+		if err != nil {
+			return err
+		}
 	}
 
 	msg := tgbotapi.NewMessage(
@@ -41,7 +52,7 @@ func (e *StartExecutor) Run(cmd Command) error {
 	)
 	msg.ReplyToMessageID = cmd.Message.MessageID
 
-	_, err := e.tgBot.Send(msg)
+	_, err = e.tgBot.Send(msg)
 	if err != nil {
 		log.Println(err)
 	}
@@ -49,7 +60,7 @@ func (e *StartExecutor) Run(cmd Command) error {
 	return nil
 }
 
-func NewStartExecutor(userRepo *user.Repository, tgBot *tgbotapi.BotAPI) *StartExecutor {
+func NewStartExecutor(userRepo user.Repository, tgBot telegram.BotAPI) *StartExecutor {
 	return &StartExecutor{
 		userRepo: userRepo,
 		tgBot:    tgBot,

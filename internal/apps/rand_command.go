@@ -7,28 +7,40 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
 	"memo/internal/memo"
+	"memo/internal/telegram"
 	"memo/internal/user"
 )
 
 type RandCommand struct {
 	defaultMemoQty uint
-	memoRepo       *memo.Repository
-	userRepo       *user.Repository
-	tgBot          *tgbotapi.BotAPI
+	memoRepo       memo.Repository
+	userRepo       user.Repository
+	tgBot          telegram.BotAPI
 }
 
 func (c *RandCommand) Run() {
-	users := c.userRepo.FindAll()
+	users, err := c.userRepo.FindAll()
+	if err != nil {
+		log.Println(err)
+
+		return
+	}
 
 	for i := range users {
 		user := &users[i]
 
-		memos := c.memoRepo.Rand(c.defaultMemoQty, user)
+		memos, err := c.memoRepo.Rand(c.defaultMemoQty, user)
+		if err != nil {
+			log.Println(err)
+
+			continue
+		}
+
 		if len(memos) == 0 {
 			continue
 		}
 
-		err := c.sendMemos(user, memos)
+		err = c.sendMemos(user, memos)
 		if err != nil {
 			log.Println(err)
 		}
@@ -60,9 +72,9 @@ func (c *RandCommand) sendMemos(user *user.User, memos []memo.Memo) error {
 
 func NewRandCommand(
 	defaultMemoQty uint,
-	memoRepo *memo.Repository,
-	userRepo *user.Repository,
-	tgBot *tgbotapi.BotAPI,
+	memoRepo memo.Repository,
+	userRepo user.Repository,
+	tgBot telegram.BotAPI,
 ) *RandCommand {
 	return &RandCommand{
 		defaultMemoQty: defaultMemoQty,

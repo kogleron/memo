@@ -30,13 +30,17 @@ func initPollingBot() (*apps.PollingBot, error) {
 	if err != nil {
 		return nil, err
 	}
-	repository := memo.NewRepository(db)
-	userRepository := user.NewRepository(db)
-	randExecutor := bootstrap.NewRandExecutor(appConfig, repository, botAPI, userRepository)
-	startExecutor := command.NewStartExecutor(userRepository, botAPI)
-	addExecutor := command.NewAddExecutor(repository, botAPI, userRepository)
+	gormRepository, err := memo.NewGORMRepository(db)
+	if err != nil {
+		return nil, err
+	}
+	userGORMRepository := user.NewGORMRepository(db)
+	randExecutor := bootstrap.NewRandExecutor(appConfig, gormRepository, botAPI, userGORMRepository)
+	startExecutor := command.NewStartExecutor(userGORMRepository, botAPI)
+	searchExecutor := bootstrap.NewSearchExecutor(botAPI, gormRepository, userGORMRepository, appConfig)
+	addExecutor := command.NewAddExecutor(gormRepository, botAPI, userGORMRepository)
 	defaultCommandExecutor := bootstrap.NewDefaultCommandExecutor(addExecutor)
-	commandExecutors := bootstrap.NewCommandExecutors(randExecutor, startExecutor, defaultCommandExecutor)
+	commandExecutors := bootstrap.NewCommandExecutors(randExecutor, startExecutor, searchExecutor, defaultCommandExecutor)
 	pollingBot := bootstrap.NewPollingBot(botAPI, telegramConfig, parser, commandExecutors)
 	return pollingBot, nil
 }

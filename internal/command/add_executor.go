@@ -6,13 +6,14 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
 	"memo/internal/memo"
+	"memo/internal/telegram"
 	"memo/internal/user"
 )
 
 type AddExecutor struct {
-	memoRepo *memo.Repository
-	tgBot    *tgbotapi.BotAPI
-	userRepo *user.Repository
+	memoRepo memo.Repository
+	tgBot    telegram.BotAPI
+	userRepo user.Repository
 }
 
 func (e *AddExecutor) Supports(cmd Command) bool {
@@ -34,7 +35,10 @@ func (e *AddExecutor) Run(cmd Command) error {
 		UserID: user.ID,
 	}
 
-	e.memoRepo.Create(memo)
+	err = e.memoRepo.Create(memo)
+	if err != nil {
+		return err
+	}
 
 	if cmd.Message == nil {
 		return nil
@@ -57,7 +61,11 @@ func (e *AddExecutor) Run(cmd Command) error {
 }
 
 func (e *AddExecutor) getUser(tgAccountName string) (*user.User, error) {
-	user := e.userRepo.FindByTgAccount(tgAccountName)
+	user, err := e.userRepo.FindByTgAccount(tgAccountName)
+	if err != nil {
+		return nil, err
+	}
+
 	if user == nil {
 		return nil, errNeedStartCmd
 	}
@@ -65,7 +73,7 @@ func (e *AddExecutor) getUser(tgAccountName string) (*user.User, error) {
 	return user, nil
 }
 
-func NewAddExecutor(memoRepo *memo.Repository, tgBot *tgbotapi.BotAPI, userRepo *user.Repository) *AddExecutor {
+func NewAddExecutor(memoRepo memo.Repository, tgBot telegram.BotAPI, userRepo user.Repository) *AddExecutor {
 	return &AddExecutor{
 		memoRepo: memoRepo,
 		tgBot:    tgBot,

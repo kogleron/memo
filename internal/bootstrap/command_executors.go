@@ -6,10 +6,11 @@ import (
 
 type commandExecutors []command.Executor
 
-func NewCommandExecutors(randExec *command.RandExecutor, startExec *command.StartExecutor, defaultExec *command.DefaultCommandExecutor) commandExecutors {
+func NewCommandExecutors(randExec *command.RandExecutor, startExec *command.StartExecutor, searchExec *command.SearchExecutor, defaultExec *command.DefaultCommandExecutor) commandExecutors {
 	return commandExecutors{
 		randExec,
 		startExec,
+		searchExec,
 		defaultExec,
 	}
 }
