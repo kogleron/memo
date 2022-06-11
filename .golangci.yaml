@@ -31,3 +31,5 @@ linters:
     - gci
     - revive
     - ifshort
+    - exhaustruct
+    - lll

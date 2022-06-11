@@ -12,6 +12,7 @@ install: ## installs dependencies
 	GOBIN=$(LOCAL_BIN) $(GO) $(GOFLAG) install golang.org/x/tools/cmd/goimports@latest
 	GOBIN=$(LOCAL_BIN) $(GO) $(GOFLAG) install mvdan.cc/gofumpt@latest
 	GOBIN=$(LOCAL_BIN) $(GO) $(GOFLAG) get -v github.com/incu6us/goimports-reviser
+	GOBIN=$(LOCAL_BIN) $(GO) $(GOFLAG) install github.com/google/wire/cmd/wire@latest
 
 .PHONY: format
 format: ## formats the code and also imports order
@@ -32,8 +33,13 @@ install-githooks: ## installs all git hooks
 	@echo "Installing githooks"
 	cp ./githooks/* .git/hooks/
 
+.PHONY: wire
+wire: ## injects dependencies
+	$(LOCAL_BIN)/wire cmd/polling_bot/wire.go 
+	$(LOCAL_BIN)/wire cmd/rand_cmd/wire.go 
+
 .PHONY: build
-build: ## builds all commands
+build: wire ## builds all commands
 	$(GO) $(GOFLAG) build -o $(LOCAL_BIN)/polling_bot ./cmd/polling_bot
 	$(GO) $(GOFLAG) build -o $(LOCAL_BIN)/rand_cmd ./cmd/rand_cmd
 
