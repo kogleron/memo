@@ -1,45 +1,57 @@
+.DEFAULT_GOAL := help
+
 GO       ?= go
 GOFLAGS  ?=
 PROJECT_NAME ?= memo
+LOCAL_BIN = $(CURDIR)/bin
 
-install:
+.PHONY: install
+install: ## installs dependencies
 	@echo "Install required programs"
-	$(GO) $(GOFLAG) install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-	$(GO) $(GOFLAG) install golang.org/x/tools/cmd/goimports@latest
-	$(GO) $(GOFLAG) install mvdan.cc/gofumpt@latest
-	$(GO) $(GOFLAG) get -v github.com/incu6us/goimports-reviser
+	GOBIN=$(LOCAL_BIN) $(GO) $(GOFLAG) install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	GOBIN=$(LOCAL_BIN) $(GO) $(GOFLAG) install golang.org/x/tools/cmd/goimports@latest
+	GOBIN=$(LOCAL_BIN) $(GO) $(GOFLAG) install mvdan.cc/gofumpt@latest
+	GOBIN=$(LOCAL_BIN) $(GO) $(GOFLAG) get -v github.com/incu6us/goimports-reviser
 
-format:
+.PHONY: format
+format: ## formats the code and also imports order
 	@echo "Formatting..."
-	${HOME}/go/bin/gofumpt -l -w -extra .
+	$(LOCAL_BIN)/gofumpt -l -w -extra .
 	@echo "Formatting imports..."
 	@for f in $$(find . -name '*.go'); do \
-		${HOME}/go/bin/goimports-reviser -file-path $$f -project-name $(PROJECT_NAME); \
+		$(LOCAL_BIN)/goimports-reviser -file-path $$f -project-name $(PROJECT_NAME); \
 	done
 
-lint:
+.PHONY: lint
+lint: ## lints the code
 	@echo "Linting"
-	${HOME}/go/bin/golangci-lint run --fix
+	$(LOCAL_BIN)/golangci-lint run --fix
 
-install-githooks:
+.PHONY: install-githooks
+install-githooks: ## installs all git hooks
 	@echo "Installing githooks"
 	cp ./githooks/* .git/hooks/
 
-build:
-	$(GO) $(GOFLAG) build -o ./bin/polling_bot ./cmd/polling_bot
-	$(GO) $(GOFLAG) build -o ./bin/rand_cmd ./cmd/rand_cmd
+.PHONY: build
+build: ## builds all commands
+	$(GO) $(GOFLAG) build -o $(LOCAL_BIN)/polling_bot ./cmd/polling_bot
+	$(GO) $(GOFLAG) build -o $(LOCAL_BIN)/rand_cmd ./cmd/rand_cmd
 
-run: build
-	./bin/memo
+.PHONY: run
+run: build ## builds and runs the polling bot
+	$(LOCAL_BIN)/polling_bot
 
-test:
+.PHONY: test
+test: ## runs tests
 	@echo "Testing"
 	$(GO) $(GOFLAG) test ./...
 
-init-db:
+.PHONY: init-db
+init-db: ## initializes db
 	$(GO) $(GOFLAG) run migrations/sqlite.go
 
-install-cron:
+.PHONY: install-cron
+install-cron: ## installs cron tasks
 	PWD=$$(pwd); sed "s|\$$PROJECT_PATH|${PWD}|" cron/com.memo.PollingBot.plist >~/Library/LaunchAgents/com.memo.PollingBot.plist
 	launchctl bootout gui/$$UID ~/Library/LaunchAgents/com.memo.PollingBot.plist
 	launchctl bootstrap gui/$$UID ~/Library/LaunchAgents/com.memo.PollingBot.plist
@@ -48,3 +60,7 @@ install-cron:
 	launchctl bootout gui/$$UID ~/Library/LaunchAgents/com.memo.RandCmd.plist
 	launchctl bootstrap gui/$$UID ~/Library/LaunchAgents/com.memo.RandCmd.plist
 	launchctl kickstart gui/$$UID/com.memo.RandCmd
+
+.PHONY: help
+help:
+	@grep --no-filename -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
