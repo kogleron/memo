@@ -33,3 +33,5 @@ linters:
     - ifshort
     - exhaustruct
     - lll
+    - rowserrcheck
+    - wastedassign

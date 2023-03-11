@@ -8,11 +8,11 @@ LOCAL_BIN = $(CURDIR)/bin
 .PHONY: install
 install: ## installs dependencies
 	@echo "Install required programs"
-	GOBIN=$(LOCAL_BIN) $(GO) $(GOFLAG) install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	GOBIN=$(LOCAL_BIN) $(GO) $(GOFLAG) install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.51.2
 	GOBIN=$(LOCAL_BIN) $(GO) $(GOFLAG) install golang.org/x/tools/cmd/goimports@latest
 	GOBIN=$(LOCAL_BIN) $(GO) $(GOFLAG) install mvdan.cc/gofumpt@latest
-	GOBIN=$(LOCAL_BIN) $(GO) $(GOFLAG) get -v github.com/incu6us/goimports-reviser
-	GOBIN=$(LOCAL_BIN) $(GO) $(GOFLAG) install github.com/google/wire/cmd/wire@latest
+	GOBIN=$(LOCAL_BIN) $(GO) $(GOFLAG) install -v github.com/incu6us/goimports-reviser/v3@v3.3.1
+	GOBIN=$(LOCAL_BIN) $(GO) $(GOFLAG) install github.com/google/wire/cmd/wire@v0.5.0
 
 .PHONY: format
 format: ## formats the code and also imports order
@@ -20,7 +20,7 @@ format: ## formats the code and also imports order
 	$(LOCAL_BIN)/gofumpt -l -w -extra .
 	@echo "Formatting imports..."
 	@for f in $$(find . -name '*.go'); do \
-		$(LOCAL_BIN)/goimports-reviser -file-path $$f -project-name $(PROJECT_NAME); \
+		$(LOCAL_BIN)/goimports-reviser -project-name $(PROJECT_NAME) $$f; \
 	done
 
 .PHONY: lint
