@@ -1,7 +1,9 @@
 package command
 
 import (
+	"fmt"
 	"log"
+	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
@@ -31,8 +33,11 @@ func (e *AddExecutor) Run(cmd Command) error {
 	}
 
 	memo := &memo.Memo{
-		Text:   cmd.Payload,
+		Text:   strings.TrimSpace(cmd.Payload),
 		UserID: user.ID,
+	}
+	if memo.Text == "" {
+		return errNoCmdMessage
 	}
 
 	err = e.memoRepo.Create(memo)
@@ -46,8 +51,9 @@ func (e *AddExecutor) Run(cmd Command) error {
 
 	msg := tgbotapi.NewMessage(
 		cmd.Message.Chat.ID,
-		"done",
+		fmt.Sprintf("added with id <b>%d</b>", memo.ID),
 	)
+	msg.ParseMode = "html"
 	msg.ReplyToMessageID = cmd.Message.MessageID
 	msg.DisableWebPagePreview = true
 	msg.DisableNotification = true
