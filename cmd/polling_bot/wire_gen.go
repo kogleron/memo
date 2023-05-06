@@ -40,7 +40,8 @@ func initPollingBot() (*apps.PollingBot, error) {
 	searchExecutor := bootstrap.NewSearchExecutor(botAPI, gormRepository, userGORMRepository, appConfig)
 	addExecutor := command.NewAddExecutor(gormRepository, botAPI, userGORMRepository)
 	defaultCommandExecutor := bootstrap.NewDefaultCommandExecutor(addExecutor)
-	commandExecutors := bootstrap.NewCommandExecutors(randExecutor, startExecutor, searchExecutor, defaultCommandExecutor)
+	deleteExecutor := command.NewDeleteExecutor(botAPI, gormRepository, userGORMRepository)
+	commandExecutors := bootstrap.NewCommandExecutors(randExecutor, startExecutor, searchExecutor, defaultCommandExecutor, deleteExecutor)
 	pollingBot := bootstrap.NewPollingBot(botAPI, telegramConfig, parser, commandExecutors)
 	return pollingBot, nil
 }

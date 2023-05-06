@@ -32,6 +32,7 @@ func initPollingBot() (*apps.PollingBot, error) { //nolint
 		bootstrap.NewRandExecutor,
 		command.NewStartExecutor,
 		command.NewAddExecutor,
+		command.NewDeleteExecutor,
 		bootstrap.NewSearchExecutor,
 		bootstrap.NewDefaultCommandExecutor,
 		bootstrap.NewCommandExecutors,

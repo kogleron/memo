@@ -48,7 +48,7 @@ func (e *SearchExecutor) getResponse(memos []memo.Memo) string {
 		return "nothing found"
 	}
 
-	text := "Found memos:\n"
+	text := "Found memos:"
 
 	for _, memo := range memos {
 		text += fmt.Sprintf("\n\n<b>#%d</b>: %s", memo.ID, memo.Text)

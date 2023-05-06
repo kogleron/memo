@@ -73,6 +73,33 @@ func (r *GORMRepository) Search(text string, user *user.User, limit uint) ([]Mem
 	return memos, nil
 }
 
+func (r *GORMRepository) FindByID(user *user.User, id uint) (*Memo, error) {
+	var memos []Memo
+
+	if user == nil {
+		return nil, errEmptyUser
+	}
+
+	tx := r.db.
+		Where("user_id = ? AND id = ?", user.ID, id).
+		Limit(1).
+		Find(&memos)
+
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	if len(memos) == 0 {
+		return nil, nil //nolint
+	}
+
+	return &memos[0], nil
+}
+
+func (r *GORMRepository) Delete(memo *Memo) error {
+	return r.db.Delete(memo).Error
+}
+
 func NewGORMRepository(db *gorm.DB) (*GORMRepository, error) {
 	if db == nil {
 		return nil, errEmptyGORMDB
