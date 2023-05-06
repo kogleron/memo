@@ -20,6 +20,7 @@ SQLite will be used as storage, Gin as http web framework .
 - [x] Add the ability to search memos by keywords
 - [x] In "add" command check if payload is empty
 - [x] In response for "add" command return a new memo id
+- [x] In "rand" command with memo also send it's id
 - [ ] Add visibility for memos. Private memos only for owner, public will be used for subscriptions.
 - [ ] Add subscriptions. Subscriber will receive notifications about new publisher's memos. Publisher's memos will be used in daily bot postings.
 - [ ] Link internal users with telegram accounts via id not name

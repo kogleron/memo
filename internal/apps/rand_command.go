@@ -2,6 +2,7 @@ package apps
 
 import (
 	"errors"
+	"fmt"
 	"log"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -57,9 +58,10 @@ func (c *RandCommand) sendMemos(user *user.User, memos []memo.Memo) error {
 	for i := range memos {
 		msg := tgbotapi.NewMessage(
 			user.TgChatID,
-			memos[i].Text,
+			fmt.Sprintf("#<b>%d</b>\n%s", memos[i].ID, memos[i].Text),
 		)
 		msg.DisableNotification = true
+		msg.ParseMode = "html"
 
 		_, err := c.tgBot.Send(msg)
 		if err != nil {
