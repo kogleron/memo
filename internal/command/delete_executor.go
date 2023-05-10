@@ -11,22 +11,34 @@ import (
 	"memo/internal/user"
 )
 
-func NewDeleteExecutor(tgBot telegram.BotAPI, memoRepo memo.Repository, userRepo user.Repository) *DeleteExecutor {
+func NewDeleteExecutor(
+	memoRepo memo.Repository,
+	userRepo user.Repository,
+	replier telegram.Replier,
+) *DeleteExecutor {
 	return &DeleteExecutor{
-		tgBot:    tgBot,
 		memoRepo: memoRepo,
 		userRepo: userRepo,
+		replier:  replier,
 	}
 }
 
 type DeleteExecutor struct {
-	tgBot    telegram.BotAPI
 	memoRepo memo.Repository
 	userRepo user.Repository
+	replier  telegram.Replier
+}
+
+func (e DeleteExecutor) GetName() string {
+	return "delete"
+}
+
+func (e DeleteExecutor) GetDescription() string {
+	return "deletes the memo with a given id. \nFormat: /" + e.GetName() + " [MEMO_ID]"
 }
 
 func (e *DeleteExecutor) Supports(cmd Command) bool {
-	return cmd.Name == "delete"
+	return cmd.Name == e.GetName()
 }
 
 func (e *DeleteExecutor) Run(cmd Command) error {
@@ -51,7 +63,7 @@ func (e *DeleteExecutor) Run(cmd Command) error {
 	}
 
 	if memo == nil {
-		return e.replyTo(cmd.Message, "not found")
+		return e.replier.ReplyTo(cmd.Message, "not found")
 	}
 
 	err = e.memoRepo.Delete(memo)
@@ -59,38 +71,12 @@ func (e *DeleteExecutor) Run(cmd Command) error {
 		return err
 	}
 
-	return e.replyTo(cmd.Message, "deleted")
-}
-
-func (e *DeleteExecutor) replyTo(message *tgbotapi.Message, text string) error {
-	if message == nil {
-		return errEmptyMessage
-	}
-
-	if message.Chat == nil {
-		return errNoChatID
-	}
-
-	msg := tgbotapi.NewMessage(
-		message.Chat.ID,
-		text,
-	)
-
-	msg.ReplyToMessageID = message.MessageID
-	msg.DisableWebPagePreview = true
-	msg.ParseMode = tgbotapi.ModeHTML
-
-	_, err := e.tgBot.Send(msg)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return e.replier.ReplyTo(cmd.Message, "deleted")
 }
 
 func (e *DeleteExecutor) getUser(message *tgbotapi.Message) (*user.User, error) {
 	if message == nil {
-		return nil, errEmptyMessage
+		return nil, telegram.ErrEmptyMessage
 	}
 
 	if message.From == nil {

@@ -8,6 +8,11 @@ import (
 	"memo/internal/user"
 )
 
-func NewSearchExecutor(tgBot telegram.BotAPI, memoRepo memo.Repository, userRepo user.Repository, conf configs.AppConfig) *command.SearchExecutor {
-	return command.NewSearchExecutor(tgBot, memoRepo, userRepo, conf.SearchResultQty)
+func NewSearchExecutor(
+	memoRepo memo.Repository,
+	userRepo user.Repository,
+	conf configs.AppConfig,
+	replier telegram.Replier,
+) *command.SearchExecutor {
+	return command.NewSearchExecutor(memoRepo, userRepo, conf.SearchResultQty, replier)
 }

@@ -2,6 +2,7 @@ package command
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -11,15 +12,39 @@ import (
 	"memo/internal/user"
 )
 
+func NewSearchExecutor(
+	memoRepo memo.Repository,
+	userRepo user.Repository,
+	resultsQty uint,
+	replier telegram.Replier,
+) *SearchExecutor {
+	return &SearchExecutor{
+		replier:    replier,
+		memoRepo:   memoRepo,
+		userRepo:   userRepo,
+		resultsQty: resultsQty,
+	}
+}
+
 type SearchExecutor struct {
-	tgBot      telegram.BotAPI
+	replier    telegram.Replier
 	memoRepo   memo.Repository
 	userRepo   user.Repository
 	resultsQty uint
 }
 
-func (e *SearchExecutor) Supports(cmd Command) bool {
-	return cmd.Name == "search"
+func (e SearchExecutor) GetName() string {
+	return "search"
+}
+
+func (e SearchExecutor) GetDescription() string {
+	return "retrivies the memos with a given text." +
+		" Max qty of memos in result is " + strconv.FormatUint(uint64(e.resultsQty), 10) + "." +
+		" \nFormat: " + e.GetName() + " [SEARCH_TEXT]"
+}
+
+func (e SearchExecutor) Supports(cmd Command) bool {
+	return cmd.Name == e.GetName()
 }
 
 func (e *SearchExecutor) Run(cmd Command) error {
@@ -40,7 +65,7 @@ func (e *SearchExecutor) Run(cmd Command) error {
 
 	resp := e.getResponse(memos)
 
-	return e.replyTo(cmd.Message, resp)
+	return e.replier.ReplyTo(cmd.Message, resp)
 }
 
 func (e *SearchExecutor) getResponse(memos []memo.Memo) string {
@@ -57,35 +82,9 @@ func (e *SearchExecutor) getResponse(memos []memo.Memo) string {
 	return text
 }
 
-func (e *SearchExecutor) replyTo(message *tgbotapi.Message, text string) error {
-	if message == nil {
-		return errEmptyMessage
-	}
-
-	if message.Chat == nil {
-		return errNoChatID
-	}
-
-	msg := tgbotapi.NewMessage(
-		message.Chat.ID,
-		text,
-	)
-
-	msg.ReplyToMessageID = message.MessageID
-	msg.DisableWebPagePreview = true
-	msg.ParseMode = tgbotapi.ModeHTML
-
-	_, err := e.tgBot.Send(msg)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (e *SearchExecutor) getUser(message *tgbotapi.Message) (*user.User, error) {
 	if message == nil {
-		return nil, errEmptyMessage
+		return nil, telegram.ErrEmptyMessage
 	}
 
 	if message.From == nil {
@@ -102,13 +101,4 @@ func (e *SearchExecutor) getUser(message *tgbotapi.Message) (*user.User, error) 
 	}
 
 	return user, nil
-}
-
-func NewSearchExecutor(tgBot telegram.BotAPI, memoRepo memo.Repository, userRepo user.Repository, resultsQty uint) *SearchExecutor {
-	return &SearchExecutor{
-		tgBot:      tgBot,
-		memoRepo:   memoRepo,
-		userRepo:   userRepo,
-		resultsQty: resultsQty,
-	}
 }

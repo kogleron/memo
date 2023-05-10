@@ -14,8 +14,16 @@ type StartExecutor struct {
 	tgBot    telegram.BotAPI
 }
 
-func (e *StartExecutor) Supports(cmd Command) bool {
-	return cmd.Name == "start"
+func (e StartExecutor) GetName() string {
+	return "start"
+}
+
+func (e StartExecutor) GetDescription() string {
+	return "starts work with a user"
+}
+
+func (e StartExecutor) Supports(cmd Command) bool {
+	return cmd.Name == e.GetName()
 }
 
 func (e *StartExecutor) Run(cmd Command) error {

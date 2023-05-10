@@ -4,6 +4,14 @@ type DefaultCommandExecutor struct {
 	realExecutor Executor
 }
 
+func (e DefaultCommandExecutor) GetDescription() string {
+	return ""
+}
+
+func (DefaultCommandExecutor) GetName() string {
+	return ""
+}
+
 func (e *DefaultCommandExecutor) Supports(_ Command) bool {
 	return true
 }

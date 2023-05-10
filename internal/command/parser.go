@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+
+	"memo/internal/telegram"
 )
 
 type Parser struct{}
@@ -15,12 +17,12 @@ func (p *Parser) IsCommand(message *tgbotapi.Message) bool {
 
 func (p *Parser) ParseCommand(message *tgbotapi.Message) (*Command, error) {
 	if message == nil {
-		return nil, errEmptyMessage
+		return nil, telegram.ErrEmptyMessage
 	}
 
 	text := strings.Trim(message.Text, " ")
 	if len(text) == 0 {
-		return nil, errEmptyMessage
+		return nil, telegram.ErrEmptyMessage
 	}
 
 	reg := regexp.MustCompile(`^/([a-z]+)\s*(.*?)\s*$`)

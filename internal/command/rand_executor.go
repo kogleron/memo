@@ -2,6 +2,7 @@ package command
 
 import (
 	"log"
+	"strconv"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
@@ -17,8 +18,16 @@ type RandExecutor struct {
 	userRepo       user.Repository
 }
 
-func (e *RandExecutor) Supports(cmd Command) bool {
-	return cmd.Name == "rand"
+func (e RandExecutor) GetName() string {
+	return "rand"
+}
+
+func (e RandExecutor) GetDescription() string {
+	return "retrieves " + strconv.FormatUint(uint64(e.defaultMemoQty), 10) + " random memos"
+}
+
+func (e RandExecutor) Supports(cmd Command) bool {
+	return cmd.Name == e.GetName()
 }
 
 func (e *RandExecutor) Run(cmd Command) error {

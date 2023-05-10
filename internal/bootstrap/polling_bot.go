@@ -8,6 +8,6 @@ import (
 	"memo/internal/configs"
 )
 
-func NewPollingBot(tgBot *tgbotapi.BotAPI, tgConfig configs.TelegramConfig, cmdParser *command.Parser, cmdExecutors commandExecutors) *apps.PollingBot {
+func NewPollingBot(tgBot *tgbotapi.BotAPI, tgConfig configs.TelegramConfig, cmdParser *command.Parser, cmdExecutors command.Executors) *apps.PollingBot {
 	return apps.NewPollingBot(tgBot, tgConfig, cmdParser, cmdExecutors, true)
 }

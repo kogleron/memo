@@ -18,8 +18,16 @@ type AddExecutor struct {
 	userRepo user.Repository
 }
 
-func (e *AddExecutor) Supports(cmd Command) bool {
-	return cmd.Name == "add"
+func (e AddExecutor) GetDescription() string {
+	return "creates the memo with a given text. \nFormat: /" + e.GetName() + " [MEMO_TEXT]"
+}
+
+func (AddExecutor) GetName() string {
+	return "add"
+}
+
+func (e AddExecutor) Supports(cmd Command) bool {
+	return cmd.Name == e.GetName()
 }
 
 func (e *AddExecutor) Run(cmd Command) error {

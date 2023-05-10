@@ -18,6 +18,7 @@ import (
 
 func initPollingBot() (*apps.PollingBot, error) { //nolint
 	wire.Build(
+		telegram.NewReplier,
 		configs.GetAppConfig,
 		configs.GetTelegramConfig,
 		command.NewParser,

@@ -12,6 +12,7 @@ import (
 	"memo/internal/command"
 	"memo/internal/configs"
 	"memo/internal/memo"
+	"memo/internal/telegram"
 	"memo/internal/user"
 )
 
@@ -24,7 +25,6 @@ func initPollingBot() (*apps.PollingBot, error) {
 		return nil, err
 	}
 	parser := command.NewParser()
-	appConfig := configs.GetAppConfig()
 	dbConfig := configs.GetDBConfig()
 	db, err := bootstrap.NewGORMDb(dbConfig)
 	if err != nil {
@@ -35,13 +35,15 @@ func initPollingBot() (*apps.PollingBot, error) {
 		return nil, err
 	}
 	userGORMRepository := user.NewGORMRepository(db)
+	addExecutor := command.NewAddExecutor(gormRepository, botAPI, userGORMRepository)
+	appConfig := configs.GetAppConfig()
 	randExecutor := bootstrap.NewRandExecutor(appConfig, gormRepository, botAPI, userGORMRepository)
 	startExecutor := command.NewStartExecutor(userGORMRepository, botAPI)
-	searchExecutor := bootstrap.NewSearchExecutor(botAPI, gormRepository, userGORMRepository, appConfig)
-	addExecutor := command.NewAddExecutor(gormRepository, botAPI, userGORMRepository)
+	replier := telegram.NewReplier(botAPI)
+	searchExecutor := bootstrap.NewSearchExecutor(gormRepository, userGORMRepository, appConfig, replier)
 	defaultCommandExecutor := bootstrap.NewDefaultCommandExecutor(addExecutor)
-	deleteExecutor := command.NewDeleteExecutor(botAPI, gormRepository, userGORMRepository)
-	commandExecutors := bootstrap.NewCommandExecutors(randExecutor, startExecutor, searchExecutor, defaultCommandExecutor, deleteExecutor)
-	pollingBot := bootstrap.NewPollingBot(botAPI, telegramConfig, parser, commandExecutors)
+	deleteExecutor := command.NewDeleteExecutor(gormRepository, userGORMRepository, replier)
+	executors := bootstrap.NewCommandExecutors(addExecutor, randExecutor, startExecutor, searchExecutor, defaultCommandExecutor, deleteExecutor, replier)
+	pollingBot := bootstrap.NewPollingBot(botAPI, telegramConfig, parser, executors)
 	return pollingBot, nil
 }
