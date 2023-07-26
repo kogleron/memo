@@ -17,10 +17,9 @@ install: ## installs dependencies
 .PHONY: format
 format: ## formats the code and also imports order
 	@echo "Formatting..."
-	$(LOCAL_BIN)/gofumpt -l -w -extra .
-	@echo "Formatting imports..."
-	@for f in $$(find . -name '*.go'); do \
-		$(LOCAL_BIN)/goimports-reviser -project-name $(PROJECT_NAME) $$f; \
+	@for f in $$(git status --porcelain | awk 'match($$1, "M|A|\\?"){print $$2}' | grep '.go$$'); do \
+		$(IMPREVISER_BIN) -project-name $(PROJECT_NAME) $$f; \
+		$(GOFUMPT_BIN) -l -w -extra $$f; \
 	done
 
 .PHONY: lint
@@ -56,8 +55,8 @@ test: ## runs tests
 init-db: ## initializes db
 	$(GO) $(GOFLAG) run migrations/sqlite.go
 
-.PHONY: install-cron
-install-cron: ## installs cron tasks
+.PHONY: cron-install
+cron-install: ## installs cron tasks
 	PWD=$$(pwd); sed "s|\$$PROJECT_PATH|${PWD}|" cron/com.memo.PollingBot.plist >~/Library/LaunchAgents/com.memo.PollingBot.plist
 	launchctl bootout gui/$$UID ~/Library/LaunchAgents/com.memo.PollingBot.plist
 	launchctl bootstrap gui/$$UID ~/Library/LaunchAgents/com.memo.PollingBot.plist
@@ -66,6 +65,11 @@ install-cron: ## installs cron tasks
 	launchctl bootout gui/$$UID ~/Library/LaunchAgents/com.memo.RandCmd.plist
 	launchctl bootstrap gui/$$UID ~/Library/LaunchAgents/com.memo.RandCmd.plist
 	launchctl kickstart gui/$$UID/com.memo.RandCmd
+
+.PHONY: cron-uninstall
+cron-uninstall: ## uninstalls cron tasks
+	launchctl bootout gui/$$UID ~/Library/LaunchAgents/com.memo.PollingBot.plist
+	launchctl bootout gui/$$UID ~/Library/LaunchAgents/com.memo.RandCmd.plist
 
 .PHONY: help
 help:
