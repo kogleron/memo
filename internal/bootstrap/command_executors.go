@@ -1,8 +1,8 @@
 package bootstrap
 
 import (
-	"memo/internal/command"
-	"memo/internal/telegram"
+	"memo/internal/api/telegram/command"
+	"memo/internal/pkg/telegram"
 )
 
 func NewCommandExecutors(

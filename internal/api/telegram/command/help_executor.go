@@ -4,7 +4,7 @@ import (
 	"sort"
 	"strings"
 
-	"memo/internal/telegram"
+	"memo/internal/pkg/telegram"
 )
 
 func NewHelpExecutor(

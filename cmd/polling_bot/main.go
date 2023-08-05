@@ -10,10 +10,10 @@ func main() {
 		panic(err)
 	}
 
-	pollingBot, err := initPollingBot()
+	app, err := initApp()
 	if err != nil {
 		panic(err)
 	}
 
-	pollingBot.Run()
+	app.Run()
 }

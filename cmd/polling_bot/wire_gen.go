@@ -7,43 +7,43 @@
 package main
 
 import (
+	"memo/configs"
+	"memo/internal/api/telegram/command"
 	"memo/internal/apps"
 	"memo/internal/bootstrap"
-	"memo/internal/command"
-	"memo/internal/configs"
-	"memo/internal/memo"
-	"memo/internal/telegram"
-	"memo/internal/user"
+	"memo/internal/infra"
+	"memo/internal/pkg/telegram"
 )
 
 // Injectors from wire.go:
 
-func initPollingBot() (*apps.PollingBot, error) {
+func initApp() (*apps.PollingBotApp, error) {
 	telegramConfig := configs.GetTelegramConfig()
 	botAPI, err := bootstrap.NewTgBot(telegramConfig)
 	if err != nil {
 		return nil, err
 	}
-	parser := command.NewParser()
 	dbConfig := configs.GetDBConfig()
 	db, err := bootstrap.NewGORMDb(dbConfig)
 	if err != nil {
 		return nil, err
 	}
-	gormRepository, err := memo.NewGORMRepository(db)
+	userGORMRepository := infra.NewUserGORMRepository(db)
+	parser := bootstrap.NewParser(userGORMRepository)
+	memoGORMRepository, err := infra.NewMemoGORMRepository(db)
 	if err != nil {
 		return nil, err
 	}
-	userGORMRepository := user.NewGORMRepository(db)
-	addExecutor := command.NewAddExecutor(gormRepository, botAPI, userGORMRepository)
+	addExecutor := command.NewAddExecutor(memoGORMRepository, botAPI)
 	appConfig := configs.GetAppConfig()
-	randExecutor := bootstrap.NewRandExecutor(appConfig, gormRepository, botAPI, userGORMRepository)
+	randExecutor := bootstrap.NewRandExecutor(appConfig, memoGORMRepository, botAPI)
 	startExecutor := command.NewStartExecutor(userGORMRepository, botAPI)
 	replier := telegram.NewReplier(botAPI)
-	searchExecutor := bootstrap.NewSearchExecutor(gormRepository, userGORMRepository, appConfig, replier)
+	searchExecutor := bootstrap.NewSearchExecutor(memoGORMRepository, appConfig, replier)
 	defaultCommandExecutor := bootstrap.NewDefaultCommandExecutor(addExecutor)
-	deleteExecutor := command.NewDeleteExecutor(gormRepository, userGORMRepository, replier)
+	deleteExecutor := command.NewDeleteExecutor(memoGORMRepository, replier)
 	executors := bootstrap.NewCommandExecutors(addExecutor, randExecutor, startExecutor, searchExecutor, defaultCommandExecutor, deleteExecutor, replier)
-	pollingBot := bootstrap.NewPollingBot(botAPI, telegramConfig, parser, executors)
-	return pollingBot, nil
+	pollingBot := bootstrap.NewTgAPIPollingBot(botAPI, telegramConfig, parser, executors)
+	pollingBotApp := apps.NewPollingBotApp(pollingBot)
+	return pollingBotApp, nil
 }

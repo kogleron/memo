@@ -5,9 +5,8 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
-	"memo/internal/configs"
-	"memo/internal/memo"
-	"memo/internal/user"
+	"memo/configs"
+	"memo/internal/domain"
 )
 
 func main() {
@@ -23,12 +22,12 @@ func main() {
 		panic("failed to connect database")
 	}
 
-	err = db.AutoMigrate(&memo.Memo{})
+	err = db.AutoMigrate(&domain.Memo{})
 	if err != nil {
 		panic(err)
 	}
 
-	err = db.AutoMigrate(&user.User{})
+	err = db.AutoMigrate(&domain.User{})
 	if err != nil {
 		panic(err)
 	}

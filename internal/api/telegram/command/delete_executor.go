@@ -4,28 +4,22 @@ import (
 	"strconv"
 	"strings"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-
-	"memo/internal/memo"
-	"memo/internal/telegram"
-	"memo/internal/user"
+	"memo/internal/domain"
+	"memo/internal/pkg/telegram"
 )
 
 func NewDeleteExecutor(
-	memoRepo memo.Repository,
-	userRepo user.Repository,
+	memoRepo domain.MemoRepository,
 	replier telegram.Replier,
 ) *DeleteExecutor {
 	return &DeleteExecutor{
 		memoRepo: memoRepo,
-		userRepo: userRepo,
 		replier:  replier,
 	}
 }
 
 type DeleteExecutor struct {
-	memoRepo memo.Repository
-	userRepo user.Repository
+	memoRepo domain.MemoRepository
 	replier  telegram.Replier
 }
 
@@ -42,6 +36,10 @@ func (e *DeleteExecutor) Supports(cmd Command) bool {
 }
 
 func (e *DeleteExecutor) Run(cmd Command) error {
+	if cmd.Sender == nil {
+		return errNeedStartCmd
+	}
+
 	text := strings.Trim(cmd.Payload, " ")
 	if len(text) == 0 {
 		return errEmptyPayload
@@ -52,12 +50,7 @@ func (e *DeleteExecutor) Run(cmd Command) error {
 		return err
 	}
 
-	user, err := e.getUser(cmd.Message)
-	if err != nil {
-		return err
-	}
-
-	memo, err := e.memoRepo.FindByID(user, uint(id))
+	memo, err := e.memoRepo.FindByID(cmd.Sender, uint(id))
 	if err != nil {
 		return err
 	}
@@ -72,25 +65,4 @@ func (e *DeleteExecutor) Run(cmd Command) error {
 	}
 
 	return e.replier.ReplyTo(cmd.Message, "deleted")
-}
-
-func (e *DeleteExecutor) getUser(message *tgbotapi.Message) (*user.User, error) {
-	if message == nil {
-		return nil, telegram.ErrEmptyMessage
-	}
-
-	if message.From == nil {
-		return nil, errEmptySender
-	}
-
-	user, err := e.userRepo.FindByTgAccount(message.From.UserName)
-	if err != nil {
-		return nil, err
-	}
-
-	if user == nil {
-		return nil, errNeedStartCmd
-	}
-
-	return user, nil
 }

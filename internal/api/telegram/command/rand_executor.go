@@ -6,16 +6,14 @@ import (
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
-	"memo/internal/memo"
-	"memo/internal/telegram"
-	"memo/internal/user"
+	"memo/internal/domain"
+	"memo/internal/pkg/telegram"
 )
 
 type RandExecutor struct {
 	defaultMemoQty uint
-	memoRepo       memo.Repository
+	memoRepo       domain.MemoRepository
 	tgBot          telegram.BotAPI
-	userRepo       user.Repository
 }
 
 func (e RandExecutor) GetName() string {
@@ -35,14 +33,13 @@ func (e *RandExecutor) Run(cmd Command) error {
 		return errNoCmdMessage
 	}
 
-	user, err := e.getUser(cmd.Message.From.UserName)
-	if err != nil {
-		return err
+	if cmd.Sender == nil {
+		return errNeedStartCmd
 	}
 
 	message := cmd.Message
 
-	memos, err := e.memoRepo.Rand(e.defaultMemoQty, user)
+	memos, err := e.memoRepo.Rand(e.defaultMemoQty, cmd.Sender)
 	if err != nil {
 		return err
 	}
@@ -54,20 +51,7 @@ func (e *RandExecutor) Run(cmd Command) error {
 	return e.sendMemos(message, memos)
 }
 
-func (e *RandExecutor) getUser(tgAccountName string) (*user.User, error) {
-	user, err := e.userRepo.FindByTgAccount(tgAccountName)
-	if err != nil {
-		return nil, err
-	}
-
-	if user == nil {
-		return nil, errNeedStartCmd
-	}
-
-	return user, nil
-}
-
-func (e *RandExecutor) sendMemos(message *tgbotapi.Message, memos []memo.Memo) error {
+func (e *RandExecutor) sendMemos(message *tgbotapi.Message, memos []domain.Memo) error {
 	var err error
 
 	for i := range memos {
@@ -100,14 +84,12 @@ func (e *RandExecutor) onNoMemos(message *tgbotapi.Message) error {
 
 func NewRandExecutor(
 	defaultMemoQty uint,
-	memoRepo memo.Repository,
+	memoRepo domain.MemoRepository,
 	tgBot telegram.BotAPI,
-	userRepo user.Repository,
 ) *RandExecutor {
 	return &RandExecutor{
 		defaultMemoQty: defaultMemoQty,
 		memoRepo:       memoRepo,
 		tgBot:          tgBot,
-		userRepo:       userRepo,
 	}
 }

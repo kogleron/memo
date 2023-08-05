@@ -1,7 +1,11 @@
 #!/bin/sh
 
 go mod tidy && \
+echo "Wiring..." && \
 make wire && \
+echo "Formating..." && \
 make format && \
+echo "Linting..." && \
 make lint && \
+echo "Testing..." && \
 make test

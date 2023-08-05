@@ -7,7 +7,8 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/stretchr/testify/assert"
 
-	"memo/internal/command"
+	"memo/internal/api/telegram/command"
+	"memo/internal/domain"
 )
 
 func Test_Parser_ParseCommand(t *testing.T) {
@@ -24,18 +25,6 @@ func Test_Parser_ParseCommand(t *testing.T) {
 			message:     "   ",
 			expectedCmd: nil,
 			expectedErr: errors.New("empty message"), //nolint: goerr113
-		},
-		{
-			name:    "default command",
-			message: " some message  ",
-			expectedCmd: &command.Command{
-				Name:    "add",
-				Payload: "some message",
-				Message: &tgbotapi.Message{
-					Text: " some message  ",
-				},
-			},
-			expectedErr: nil,
 		},
 		{
 			name:    "parsed command",
@@ -55,10 +44,10 @@ func Test_Parser_ParseCommand(t *testing.T) {
 		tt := &tests[n]
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			parser := command.NewParser()
-			message := tgbotapi.Message{
-				Text: tt.message,
-			}
+
+			repo := &domain.UserRepositoryMock{}
+			parser := command.NewParser(repo)
+			message := tgbotapi.Message{Text: tt.message}
 
 			actualCmd, actualErr := parser.ParseCommand(&message)
 

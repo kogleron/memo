@@ -5,37 +5,27 @@ GOFLAGS  ?=
 PROJECT_NAME ?= memo
 LOCAL_BIN = $(CURDIR)/bin
 
-.PHONY: install
-install: ## installs dependencies
-	@echo "Install required programs"
-	GOBIN=$(LOCAL_BIN) $(GO) $(GOFLAG) install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.51.2
-	GOBIN=$(LOCAL_BIN) $(GO) $(GOFLAG) install golang.org/x/tools/cmd/goimports@latest
-	GOBIN=$(LOCAL_BIN) $(GO) $(GOFLAG) install mvdan.cc/gofumpt@latest
-	GOBIN=$(LOCAL_BIN) $(GO) $(GOFLAG) install -v github.com/incu6us/goimports-reviser/v3@v3.3.1
-	GOBIN=$(LOCAL_BIN) $(GO) $(GOFLAG) install github.com/google/wire/cmd/wire@v0.5.0
+include bin-deps.mk
 
 .PHONY: format
-format: ## formats the code and also imports order
-	@echo "Formatting..."
+format: $(IMPREVISER_BIN) $(GOFUMPT_BIN) ## formats the code and also imports order
 	@for f in $$(git status --porcelain | awk 'match($$1, "M|A|\\?"){print $$2}' | grep '.go$$'); do \
 		$(IMPREVISER_BIN) -project-name $(PROJECT_NAME) $$f; \
 		$(GOFUMPT_BIN) -l -w -extra $$f; \
 	done
 
 .PHONY: lint
-lint: ## lints the code
-	@echo "Linting"
-	$(LOCAL_BIN)/golangci-lint run --fix
+lint: $(LINT_BIN) ## lints the code
+	$(LINT_BIN) run --fix
 
 .PHONY: install-githooks
 install-githooks: ## installs all git hooks
-	@echo "Installing githooks"
 	cp ./githooks/* .git/hooks/
 
 .PHONY: wire
-wire: ## injects dependencies
-	$(LOCAL_BIN)/wire cmd/polling_bot/wire.go 
-	$(LOCAL_BIN)/wire cmd/rand_cmd/wire.go 
+wire: $(WIRE_BIN) ## injects dependencies
+	$(WIRE_BIN) cmd/polling_bot/wire.go 
+	$(WIRE_BIN) cmd/rand_cmd/wire.go 
 
 .PHONY: build
 build: wire ## builds all commands
@@ -48,11 +38,10 @@ run: build ## builds and runs the polling bot
 
 .PHONY: test
 test: ## runs tests
-	@echo "Testing"
 	$(GO) $(GOFLAG) test ./...
 
-.PHONY: init-db
-init-db: ## initializes db
+.PHONY: db-up
+db-up: ## initializes or migrates db
 	$(GO) $(GOFLAG) run migrations/sqlite.go
 
 .PHONY: cron-install
@@ -70,6 +59,10 @@ cron-install: ## installs cron tasks
 cron-uninstall: ## uninstalls cron tasks
 	launchctl bootout gui/$$UID ~/Library/LaunchAgents/com.memo.PollingBot.plist
 	launchctl bootout gui/$$UID ~/Library/LaunchAgents/com.memo.RandCmd.plist
+
+.PHONY: generate
+generate: $(MOCKERY_BIN) wire ## generates code
+	@PATH="$$PATH:$(LOCAL_BIN)" GOBIN=$(LOCAL_BIN) $(GO) $(GOFLAG) generate ./...
 
 .PHONY: help
 help:

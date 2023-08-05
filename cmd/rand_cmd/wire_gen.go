@@ -7,11 +7,10 @@
 package main
 
 import (
+	"memo/configs"
 	"memo/internal/apps"
 	"memo/internal/bootstrap"
-	"memo/internal/configs"
-	"memo/internal/memo"
-	"memo/internal/user"
+	"memo/internal/infra"
 )
 
 // Injectors from wire.go:
@@ -23,16 +22,16 @@ func initRandCommand() (*apps.RandCommand, error) {
 	if err != nil {
 		return nil, err
 	}
-	gormRepository, err := memo.NewGORMRepository(db)
+	memoGORMRepository, err := infra.NewMemoGORMRepository(db)
 	if err != nil {
 		return nil, err
 	}
-	userGORMRepository := user.NewGORMRepository(db)
+	userGORMRepository := infra.NewUserGORMRepository(db)
 	telegramConfig := configs.GetTelegramConfig()
 	botAPI, err := bootstrap.NewTgBot(telegramConfig)
 	if err != nil {
 		return nil, err
 	}
-	randCommand := bootstrap.NewRandCommand(appConfig, gormRepository, userGORMRepository, botAPI)
+	randCommand := bootstrap.NewRandCommand(appConfig, memoGORMRepository, userGORMRepository, botAPI)
 	return randCommand, nil
 }

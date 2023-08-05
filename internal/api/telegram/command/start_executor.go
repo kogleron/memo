@@ -5,12 +5,12 @@ import (
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
-	"memo/internal/telegram"
-	"memo/internal/user"
+	"memo/internal/domain"
+	"memo/internal/pkg/telegram"
 )
 
 type StartExecutor struct {
-	userRepo user.Repository
+	userRepo domain.UserRepository
 	tgBot    telegram.BotAPI
 }
 
@@ -37,7 +37,7 @@ func (e *StartExecutor) Run(cmd Command) error {
 	}
 
 	if userEntry == nil {
-		userEntry = &user.User{
+		userEntry = &domain.User{
 			TgAccount: cmd.Message.From.UserName,
 			TgChatID:  cmd.Message.Chat.ID,
 		}
@@ -68,7 +68,7 @@ func (e *StartExecutor) Run(cmd Command) error {
 	return nil
 }
 
-func NewStartExecutor(userRepo user.Repository, tgBot telegram.BotAPI) *StartExecutor {
+func NewStartExecutor(userRepo domain.UserRepository, tgBot telegram.BotAPI) *StartExecutor {
 	return &StartExecutor{
 		userRepo: userRepo,
 		tgBot:    tgBot,

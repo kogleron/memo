@@ -4,7 +4,7 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
-	"memo/internal/configs"
+	"memo/configs"
 )
 
 func NewGORMDb(conf configs.DBConfig) (*gorm.DB, error) {

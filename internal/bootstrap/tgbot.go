@@ -3,7 +3,7 @@ package bootstrap
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
-	"memo/internal/configs"
+	"memo/configs"
 )
 
 func NewTgBot(tgConf configs.TelegramConfig) (*tgbotapi.BotAPI, error) {

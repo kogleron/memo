@@ -7,15 +7,14 @@ import (
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
-	"memo/internal/memo"
-	"memo/internal/telegram"
-	"memo/internal/user"
+	"memo/internal/domain"
+	"memo/internal/pkg/telegram"
 )
 
 type RandCommand struct {
 	defaultMemoQty uint
-	memoRepo       memo.Repository
-	userRepo       user.Repository
+	memoRepo       domain.MemoRepository
+	userRepo       domain.UserRepository
 	tgBot          telegram.BotAPI
 }
 
@@ -48,7 +47,7 @@ func (c *RandCommand) Run() {
 	}
 }
 
-func (c *RandCommand) sendMemos(user *user.User, memos []memo.Memo) error {
+func (c *RandCommand) sendMemos(user *domain.User, memos []domain.Memo) error {
 	if user.TgChatID == 0 {
 		return errors.New("no chat id for user " + user.TgAccount) //nolint: goerr113
 	}
@@ -74,8 +73,8 @@ func (c *RandCommand) sendMemos(user *user.User, memos []memo.Memo) error {
 
 func NewRandCommand(
 	defaultMemoQty uint,
-	memoRepo memo.Repository,
-	userRepo user.Repository,
+	memoRepo domain.MemoRepository,
+	userRepo domain.UserRepository,
 	tgBot telegram.BotAPI,
 ) *RandCommand {
 	return &RandCommand{

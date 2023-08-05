@@ -1,4 +1,4 @@
-package memo
+package infra
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
-	"memo/internal/user"
+	"memo/internal/domain"
 )
 
 var (
@@ -15,18 +15,28 @@ var (
 	errEmptyGORMDB = errors.New("empty gorm db")
 )
 
-type GORMRepository struct {
+func NewMemoGORMRepository(db *gorm.DB) (*MemoGORMRepository, error) {
+	if db == nil {
+		return nil, errEmptyGORMDB
+	}
+
+	return &MemoGORMRepository{
+		db: db,
+	}, nil
+}
+
+type MemoGORMRepository struct {
 	db *gorm.DB
 }
 
-func (r *GORMRepository) Create(memo *Memo) error {
+func (r *MemoGORMRepository) Create(memo *domain.Memo) error {
 	tx := r.db.Create(memo)
 
 	return tx.Error
 }
 
-func (r *GORMRepository) Rand(qty uint, user *user.User) ([]Memo, error) {
-	var memos []Memo
+func (r *MemoGORMRepository) Rand(qty uint, user *domain.User) ([]domain.Memo, error) {
+	var memos []domain.Memo
 
 	if user == nil {
 		return nil, errEmptyUser
@@ -49,8 +59,8 @@ func (r *GORMRepository) Rand(qty uint, user *user.User) ([]Memo, error) {
 	return memos, nil
 }
 
-func (r *GORMRepository) Search(text string, user *user.User, limit uint) ([]Memo, error) {
-	var memos []Memo
+func (r *MemoGORMRepository) Search(text string, user *domain.User, limit uint) ([]domain.Memo, error) {
+	var memos []domain.Memo
 
 	if user == nil {
 		return nil, errEmptyUser
@@ -73,8 +83,8 @@ func (r *GORMRepository) Search(text string, user *user.User, limit uint) ([]Mem
 	return memos, nil
 }
 
-func (r *GORMRepository) FindByID(user *user.User, id uint) (*Memo, error) {
-	var memos []Memo
+func (r *MemoGORMRepository) FindByID(user *domain.User, id uint) (*domain.Memo, error) {
+	var memos []domain.Memo
 
 	if user == nil {
 		return nil, errEmptyUser
@@ -96,16 +106,6 @@ func (r *GORMRepository) FindByID(user *user.User, id uint) (*Memo, error) {
 	return &memos[0], nil
 }
 
-func (r *GORMRepository) Delete(memo *Memo) error {
+func (r *MemoGORMRepository) Delete(memo *domain.Memo) error {
 	return r.db.Delete(memo).Error
-}
-
-func NewGORMRepository(db *gorm.DB) (*GORMRepository, error) {
-	if db == nil {
-		return nil, errEmptyGORMDB
-	}
-
-	return &GORMRepository{
-		db: db,
-	}, nil
 }

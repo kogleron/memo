@@ -5,31 +5,25 @@ import (
 	"strconv"
 	"strings"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-
-	"memo/internal/memo"
-	"memo/internal/telegram"
-	"memo/internal/user"
+	"memo/internal/domain"
+	"memo/internal/pkg/telegram"
 )
 
 func NewSearchExecutor(
-	memoRepo memo.Repository,
-	userRepo user.Repository,
+	memoRepo domain.MemoRepository,
 	resultsQty uint,
 	replier telegram.Replier,
 ) *SearchExecutor {
 	return &SearchExecutor{
 		replier:    replier,
 		memoRepo:   memoRepo,
-		userRepo:   userRepo,
 		resultsQty: resultsQty,
 	}
 }
 
 type SearchExecutor struct {
 	replier    telegram.Replier
-	memoRepo   memo.Repository
-	userRepo   user.Repository
+	memoRepo   domain.MemoRepository
 	resultsQty uint
 }
 
@@ -48,17 +42,16 @@ func (e SearchExecutor) Supports(cmd Command) bool {
 }
 
 func (e *SearchExecutor) Run(cmd Command) error {
+	if cmd.Sender == nil {
+		return errNeedStartCmd
+	}
+
 	text := strings.Trim(cmd.Payload, " ")
 	if len(text) == 0 {
 		return errEmptyPayload
 	}
 
-	user, err := e.getUser(cmd.Message)
-	if err != nil {
-		return err
-	}
-
-	memos, err := e.memoRepo.Search(text, user, e.resultsQty)
+	memos, err := e.memoRepo.Search(text, cmd.Sender, e.resultsQty)
 	if err != nil {
 		return err
 	}
@@ -68,7 +61,7 @@ func (e *SearchExecutor) Run(cmd Command) error {
 	return e.replier.ReplyTo(cmd.Message, resp)
 }
 
-func (e *SearchExecutor) getResponse(memos []memo.Memo) string {
+func (e *SearchExecutor) getResponse(memos []domain.Memo) string {
 	if len(memos) == 0 {
 		return "nothing found"
 	}
@@ -80,25 +73,4 @@ func (e *SearchExecutor) getResponse(memos []memo.Memo) string {
 	}
 
 	return text
-}
-
-func (e *SearchExecutor) getUser(message *tgbotapi.Message) (*user.User, error) {
-	if message == nil {
-		return nil, telegram.ErrEmptyMessage
-	}
-
-	if message.From == nil {
-		return nil, errEmptySender
-	}
-
-	user, err := e.userRepo.FindByTgAccount(message.From.UserName)
-	if err != nil {
-		return nil, err
-	}
-
-	if user == nil {
-		return nil, errNeedStartCmd
-	}
-
-	return user, nil
 }

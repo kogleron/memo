@@ -1,18 +1,16 @@
 package bootstrap
 
 import (
-	"memo/internal/command"
-	"memo/internal/configs"
-	"memo/internal/memo"
-	"memo/internal/telegram"
-	"memo/internal/user"
+	"memo/configs"
+	"memo/internal/api/telegram/command"
+	"memo/internal/domain"
+	"memo/internal/pkg/telegram"
 )
 
 func NewSearchExecutor(
-	memoRepo memo.Repository,
-	userRepo user.Repository,
+	memoRepo domain.MemoRepository,
 	conf configs.AppConfig,
 	replier telegram.Replier,
 ) *command.SearchExecutor {
-	return command.NewSearchExecutor(memoRepo, userRepo, conf.SearchResultQty, replier)
+	return command.NewSearchExecutor(memoRepo, conf.SearchResultQty, replier)
 }
