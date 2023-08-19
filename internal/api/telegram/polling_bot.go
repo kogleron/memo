@@ -82,7 +82,7 @@ func (b *pollingBot) processUpdate(update *tgbotapi.Update) {
 	log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 
 	if !b.cmdParser.IsCommand(update.Message) {
-		log.Printf("not a command: %s\n", update.Message.Text)
+		log.Printf("Not a command: %s\n", update.Message.Text)
 
 		return
 	}
@@ -94,12 +94,6 @@ func (b *pollingBot) processUpdate(update *tgbotapi.Update) {
 		return
 	}
 
-	if cmd == nil {
-		return
-	}
-
-	cmdWasExecuted := false
-
 	for _, cmdExecutor := range b.cmdExecutors {
 		if !cmdExecutor.Supports(*cmd) {
 			continue
@@ -110,14 +104,10 @@ func (b *pollingBot) processUpdate(update *tgbotapi.Update) {
 			b.onExecutionError(err, update.Message)
 		}
 
-		cmdWasExecuted = true
-
-		break
+		return
 	}
 
-	if !cmdWasExecuted {
-		b.onFailedExecution(update, *cmd)
-	}
+	b.onFailedExecution(update, *cmd)
 }
 
 func (b *pollingBot) onExecutionError(err error, message *tgbotapi.Message) {
