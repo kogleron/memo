@@ -24,6 +24,7 @@ SQLite will be used as storage, Gin as http web framework .
 - [x] Add "help" command. Which will return all available commands with descriptions.
 - [x] Add "delete" command. Which will delete the memo with a given id.
 - [x] Add env config for shutdowning polling bot
+- [x] Reply error on unauthorized messages. When unauthorized user sends messages, reply with error
 - [ ] Add "update" command. Which will update the memo with a given id.
 - [ ] Add "get" command. Which will return the memo with a given id.
 - [ ] Add visibility for memos. Private memos only for owner, public will be used for subscriptions.
