@@ -49,49 +49,43 @@ func (b *pollingBot) Run() {
 		go func() {
 			time.Sleep(time.Second * time.Duration(updateConf.Timeout+1))
 			b.tgBot.StopReceivingUpdates()
-			log.Println("Stopping...")
+			log.Println("stopping...")
 		}()
 	}
 
 	for update := range updatesCh {
 		if !b.isAllowedUpdate(&update) {
+			log.Printf("message from a not authorized account %s\n", update.Message.From.UserName)
+			b.replyError(lcerrors.NewReplyError("you are not authorized"), update.Message)
+
 			continue
 		}
 
-		b.processUpdate(&update)
+		err := b.processUpdate(&update)
+		if err != nil {
+			b.replyError(err, update.Message)
+		}
 	}
 
-	log.Println("Shutdowning...")
+	log.Println("shutdowning...")
 }
 
 func (b *pollingBot) isAllowedUpdate(update *tgbotapi.Update) bool {
 	_, allowed := b.tgConfig.AllowedAccountsMap[update.Message.From.UserName]
 
-	if !allowed {
-		log.Printf("Message from a not authorized account %s\n", update.Message.From.UserName)
-	}
-
 	return allowed
 }
 
-func (b *pollingBot) processUpdate(update *tgbotapi.Update) {
+func (b *pollingBot) processUpdate(update *tgbotapi.Update) error {
 	if update.Message == nil {
-		return
+		return nil
 	}
 
 	log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 
-	if !b.cmdParser.IsCommand(update.Message) {
-		log.Printf("Not a command: %s\n", update.Message.Text)
-
-		return
-	}
-
-	cmd, err := b.cmdParser.ParseCommand(update.Message)
+	cmd, err := b.parseCommand(update.Message)
 	if err != nil {
-		log.Println(err)
-
-		return
+		return err
 	}
 
 	for _, cmdExecutor := range b.cmdExecutors {
@@ -101,16 +95,16 @@ func (b *pollingBot) processUpdate(update *tgbotapi.Update) {
 
 		err = cmdExecutor.Run(*cmd)
 		if err != nil {
-			b.onExecutionError(err, update.Message)
+			return err
 		}
 
-		return
+		return nil
 	}
 
-	b.onFailedExecution(update, *cmd)
+	return lcerrors.NewReplyError("not supported command '" + cmd.Name + "'")
 }
 
-func (b *pollingBot) onExecutionError(err error, message *tgbotapi.Message) {
+func (b pollingBot) replyError(err error, message *tgbotapi.Message) {
 	log.Println(err)
 
 	_, needReply := err.(*lcerrors.ReplyError) //nolint: errorlint
@@ -130,12 +124,17 @@ func (b *pollingBot) onExecutionError(err error, message *tgbotapi.Message) {
 	}
 }
 
-func (b *pollingBot) onFailedExecution(update *tgbotapi.Update, cmd command.Command) {
-	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Not supported command: "+cmd.Name)
-	msg.ReplyToMessageID = update.Message.MessageID
-
-	_, err := b.tgBot.Send(msg)
-	if err != nil {
-		log.Println(err)
+func (b pollingBot) parseCommand(message *tgbotapi.Message) (*command.Command, error) {
+	if !b.cmdParser.IsCommand(message) {
+		return nil, lcerrors.NewReplyError("not a command '" + message.Text + "'")
 	}
+
+	cmd, err := b.cmdParser.ParseCommand(message)
+	if err != nil {
+		log.Print(err)
+
+		return nil, lcerrors.NewReplyError("failed to parse command")
+	}
+
+	return cmd, nil
 }
