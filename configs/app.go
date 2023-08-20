@@ -7,6 +7,7 @@ import (
 type AppConfig struct {
 	RandQty         int  `envconfig:"RAND_QTY" required:"true"`
 	SearchResultQty uint `envconfig:"SEARCH_RESULT_QTY" required:"true"`
+	PollingShutdown bool `envconfig:"POLLING_SHUTDOWN"`
 }
 
 func GetAppConfig() AppConfig {

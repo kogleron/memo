@@ -43,7 +43,7 @@ func initApp() (*apps.PollingBotApp, error) {
 	defaultCommandExecutor := bootstrap.NewDefaultCommandExecutor(addExecutor)
 	deleteExecutor := command.NewDeleteExecutor(memoGORMRepository, replier)
 	executors := bootstrap.NewCommandExecutors(addExecutor, randExecutor, startExecutor, searchExecutor, defaultCommandExecutor, deleteExecutor, replier)
-	pollingBot := bootstrap.NewTgAPIPollingBot(botAPI, telegramConfig, parser, executors)
+	pollingBot := bootstrap.NewTgAPIPollingBot(botAPI, telegramConfig, parser, executors, appConfig)
 	pollingBotApp := apps.NewPollingBotApp(pollingBot)
 	return pollingBotApp, nil
 }
